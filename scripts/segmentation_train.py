@@ -7,6 +7,7 @@ from guided_diffusion import dist_util, logger
 from guided_diffusion.resample import create_named_schedule_sampler
 from guided_diffusion.bratsloader import BRATSDataset, BRATSDataset3D
 from guided_diffusion.isicloader import ISICDataset
+from guided_diffusion.MRIloader import MRIDataset
 from guided_diffusion.script_util import (
     model_and_diffusion_defaults,
     create_model_and_diffusion,
@@ -39,6 +40,13 @@ def main():
 
         ds = BRATSDataset3D(args.data_dir, transform_train, test_flag=False)
         args.in_ch = 5
+    elif args.data_name == 'MRI':
+        tran_list = [transforms.Resize((args.image_size, args.image_size)), ]
+        transform_train = transforms.Compose(tran_list)
+
+        ds = MRIDataset(args, args.data_dir, transform_train)
+        args.in_ch = 4
+
     datal= th.utils.data.DataLoader(
         ds,
         batch_size=args.batch_size,
