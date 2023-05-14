@@ -107,7 +107,7 @@ def main():
             # slice_ID=path[0].split("_")[2] + "_" + path[0].split("_")[4]
             slice_ID=path[0].split("_")[-3] + "_" + path[0].split("slice")[-1].split('.nii')[0]
         elif args.data_name == 'MRI':
-            slice_ID = ds.path_leaf(path)[:-4]
+            slice_ID = ds.path_leaf(path[0])[:-4]
         logger.log(slice_ID)
 
         logger.log("sampling...")
