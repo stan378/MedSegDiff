@@ -41,7 +41,7 @@ class MRIDataset(Dataset):
     def __len__(self):
         return len(self.name_list)
 
-    def path_leaf(path):
+    def path_leaf(self, path):
         head, tail = ntpath.split(path)
         return tail or ntpath.basename(head)
 

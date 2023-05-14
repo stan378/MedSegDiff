@@ -9,8 +9,6 @@ import nibabel as nib
 import sys
 import random
 
-from guided_diffusion.MRIloader import MRIDataset
-
 sys.path.append(".")
 import numpy as np
 import time
@@ -20,6 +18,7 @@ import torch.distributed as dist
 from guided_diffusion import dist_util, logger
 from guided_diffusion.bratsloader import BRATSDataset, BRATSDataset3D
 from guided_diffusion.isicloader import ISICDataset
+from guided_diffusion.MRIloader import MRIDataset
 import torchvision.utils as vutils
 from guided_diffusion.utils import staple
 from guided_diffusion.script_util import (
@@ -107,6 +106,9 @@ def main():
         elif args.data_name == 'BRATS':
             # slice_ID=path[0].split("_")[2] + "_" + path[0].split("_")[4]
             slice_ID=path[0].split("_")[-3] + "_" + path[0].split("slice")[-1].split('.nii')[0]
+        elif args.data_name == 'MRI':
+            slice_ID = ds.path_leaf(path)[:-4]
+        logger.log(slice_ID)
 
         logger.log("sampling...")
 
