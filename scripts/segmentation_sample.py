@@ -8,6 +8,9 @@ import nibabel as nib
 # viz = Visdom(port=8850)
 import sys
 import random
+
+from guided_diffusion.MRIloader import MRIDataset
+
 sys.path.append(".")
 import numpy as np
 import time
@@ -51,6 +54,12 @@ def main():
         transform_test = transforms.Compose(tran_list)
 
         ds = ISICDataset(args, args.data_dir, transform_test, mode = 'Test')
+        args.in_ch = 4
+    elif args.data_name == 'MRI':
+        tran_list = [transforms.Resize((args.image_size, args.image_size)), transforms.ToTensor(), ]
+        transform_train = transforms.Compose(tran_list)
+
+        ds = MRIDataset(args, args.data_dir, transform_train)
         args.in_ch = 4
     elif args.data_name == 'BRATS':
         tran_list = [transforms.Resize((args.image_size,args.image_size)),]
