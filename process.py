@@ -1,6 +1,6 @@
 import os
 
-path = "D:/Segmentacja/MedSegDiff/results/"
+path = "D:/Segmentacja/MedSegDiff/results2/"
 files = os.listdir(path)
 
 for file in files:
