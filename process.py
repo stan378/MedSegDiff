@@ -4,7 +4,8 @@ path = "D:/Segmentacja/MedSegDiff/results/"
 files = os.listdir(path)
 
 for file in files:
-	patient = file[:file.find("_output")]
+	end_ind = file[:file.find("_output")].rfind("_")
+	patient = file[:end_ind]
 	
 	if not os.path.exists(path + patient):
 		os.makedirs(path + patient)
