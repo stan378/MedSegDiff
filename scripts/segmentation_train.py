@@ -45,7 +45,7 @@ def main():
         transform_train = transforms.Compose(tran_list)
 
         ds = MRIDataset(args, args.data_dir, transform_train)
-        args.in_ch = 1
+        args.in_ch = 2
 
     datal= th.utils.data.DataLoader(
         ds,
