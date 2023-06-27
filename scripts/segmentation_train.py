@@ -17,6 +17,7 @@ from guided_diffusion.script_util import (
 import torch as th
 from guided_diffusion.train_util import TrainLoop
 from visdom import Visdom
+import scipy.ndimage as ndi
 viz = Visdom(port=8850)
 import torchvision.transforms as transforms
 
@@ -41,11 +42,19 @@ def main():
         ds = BRATSDataset3D(args.data_dir, transform_train, test_flag=False)
         args.in_ch = 5
     elif args.data_name == 'MRI':
-        tran_list = [transforms.Resize((args.image_size, args.image_size)), transforms.Grayscale(), transforms.ToTensor(),]
+        if args.trans_type == "gray":
+            args.in_ch = 2
+            tran_list = [transforms.Resize((args.image_size, args.image_size)), transforms.Grayscale(), transforms.ToTensor(),]
+        elif args.trans_type == "filter":
+            args.in_ch = 4
+            tran_list = [transforms.Resize((args.image_size, args.image_size)), transforms.Lambda(lambda x: ndi.gaussian_filter(x, sigma=1)),
+                         transforms.ToTensor(), ]
+        else: #args.trans_type == "orginal":
+            args.in_ch = 4
+            tran_list = [transforms.Resize((args.image_size, args.image_size)), transforms.ToTensor(), ]
         transform_train = transforms.Compose(tran_list)
 
         ds = MRIDataset(args, args.data_dir, transform_train)
-        args.in_ch = 2
 
     datal= th.utils.data.DataLoader(
         ds,
@@ -93,6 +102,7 @@ def create_argparser():
         data_name = 'BRATS',
         data_dir="../dataset/brats2020/training",
         schedule_sampler="uniform",
+        trans_type="orginal",
         lr=1e-4,
         weight_decay=0.0,
         lr_anneal_steps=0,

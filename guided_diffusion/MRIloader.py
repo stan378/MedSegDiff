@@ -63,7 +63,7 @@ class MRIDataset(Dataset):
         if self.transform:
             state = torch.get_rng_state()
             img = self.transform(img)
-            torch.set_rng_state(state)
-            mask = self.transform(mask)
+            #torch.set_rng_state(state)
+            #mask = self.transform(mask)
 
         return (img, mask, name)
