@@ -2,6 +2,7 @@ import sys
 from PIL import Image, ImageChops
 import matplotlib.pyplot as plt
 import matplotlib
+import cv2
 import numpy as np
 from sklearn.metrics import mean_squared_error
 import os
@@ -11,15 +12,6 @@ def iou(groundtruth_mask, pred_mask):
   union = np.sum(pred_mask) + np.sum(groundtruth_mask) - intersect
   iou = np.mean(intersect / union)
   return round(iou, 3)
-
-def convertPredicted(img, threshold = 200):
-  for j in range(img.shape[0]):
-    for i in range(img.shape[1]):
-      if img[j][i] > threshold:
-        img[j][i] = 255
-      else:
-        img[j][i]= 0
-  return img
 
 def change_color(img, color):
   data = np.array(img)  # "data" is a height x width x 4 numpy array
@@ -41,9 +33,8 @@ def change_color(img, color):
   im2 = Image.fromarray(data)
   return im2
 
-def mergeMasks(target, pred, threshold = 200):
-  pred = Image.open(pred).convert('L')
-  pred = Image.fromarray(convertPredicted(np.array(pred), threshold)).convert('1')
+def mergeMasks(target, conv):
+  pred = Image.open(conv).convert('1')
   target = Image.open(target).convert('1')
   image = Image.new('1', (256, 256), 1)
 
@@ -86,9 +77,8 @@ def dice_coef(groundtruth_mask, pred_mask):
   dice = np.mean(2 * intersect / total_sum)
   return round(dice, 3)
 
-def calculate_metrics(mask, pred):
-  pred = Image.open(pred).convert('L')
-  pred = Image.fromarray(convertPredicted(np.array(pred))).convert('1')
+def calculate_metrics(mask, conv):
+  pred = Image.open(conv).convert('1')
   target = Image.open(mask).convert('1')
 
   target = np.array(target)
@@ -105,7 +95,6 @@ def calculate_metrics(mask, pred):
 def display_histogram(img):
   histogram = img.histogram()
   print(np.asarray(histogram>0.98).nonzero())
-  print(len(conv.histogram()))
   for i in range(0, 256):
     plt.bar(i, histogram[i], color='black', alpha=0.3)
   plt.ylim([0, 100])
@@ -142,23 +131,38 @@ for patient in patients:
       continue
 
     print(pred)
-    # Converted images
-    conv = Image.open(pred_folder + '/' + pred).convert('L')
-    histogram = conv.histogram()
-    histogram_cumsum = np.cumsum(histogram) / np.sum(histogram)
-    threshold = np.asarray(histogram_cumsum > 0.98).nonzero()[0][0]
-    print(f'Threshold: {threshold}')
-    conv = Image.open(pred_folder + '/' + pred).convert('L')
-    conv = Image.fromarray(convertPredicted(np.array(conv), threshold)).convert('1')
-    conv.save(convertedFolder + pred + '.jpg')
+    img = cv2.imread(pred_folder + '/' + pred, cv2.IMREAD_GRAYSCALE)
+
+    # otsu thresholding
+    _, mask = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    # close everything inside
+    contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+
+    # get the biggest contour # returns _, contours, _ if using OpenCV 3
+    biggest_area = -1
+    biggest = None
+    for con in contours:
+      area = cv2.contourArea(con)
+      if biggest_area < area:
+        biggest_area = area
+        biggest = con
+
+    # fill in the contour
+    cv2.drawContours(mask, contours, -1, 0, -1)
+    if biggest is not None:
+      cv2.drawContours(mask, [biggest], -1, 255, -1)
+
+    # save
+    cv2.imwrite(convertedFolder + pred, mask)
 
     # Merged images
     mask = '/' + pred[:-15] + '_mask.tif'
     mask_path = target_folder + mask
-    pred_path = pred_folder + '/' + pred
-    mergeMasks(mask_path, pred_path, threshold).save(mergedFolder + pred[:-15] + '_merged' + '.png')
+    conv_path = convertedFolder + pred
+    mergeMasks(mask_path, conv_path).save(mergedFolder + pred[:-15] + '_merged' + '.png')
 
-    iou_value, precision, recall, accuracy_value, dice_value, mse = calculate_metrics(mask_path, pred_path)
+    iou_value, precision, recall, accuracy_value, dice_value, mse = calculate_metrics(mask_path, conv_path)
     print(f'\tIOU: {iou_value}\n\tPrecision: {precision}\n\tRecall: {recall}\n\t'
           f'Accuracy: {accuracy_value}\n\tDice coef: {dice_value}\n\tMSE: {mse}')
 
