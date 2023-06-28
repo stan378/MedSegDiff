@@ -37,6 +37,8 @@ class MRIDataset(Dataset):
         self.mode = mode
 
         self.transform = transform
+        tran_list = [transforms.Resize((256, 256)), transforms.ToTensor(), ]
+        self.mask_transform = transforms.Compose(tran_list)
 
     def __len__(self):
         return len(self.name_list)
@@ -63,7 +65,7 @@ class MRIDataset(Dataset):
         if self.transform:
             state = torch.get_rng_state()
             img = self.transform(img)
-            #torch.set_rng_state(state)
-            #mask = self.transform(mask)
+            torch.set_rng_state(state)
+            mask = self.mask_transform(mask)
 
         return (img, mask, name)
