@@ -193,6 +193,7 @@ def main():
 
 def create_argparser():
     defaults = dict(
+        trans_type = 'orginal',
         data_name = 'BRATS',
         data_dir="../dataset/brats2020/testing",
         clip_denoised=True,

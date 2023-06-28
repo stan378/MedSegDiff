@@ -102,8 +102,8 @@ def display_histogram(img):
 
 #pred = Image.open(sys.argv[1])
 #target = Image.open(sys.argv[2])
-result_path = f'D:/Segmentacja/Experiments/Grayscale/results330000/'
-test_folder = f'D:/Segmentacja/Experiments/test/'
+result_path = f'D:/Segmentacja/Experiments/Grayscale/split1/'
+test_folder = f'D:/Segmentacja/Experiments/data/data/split1/test/'
 
 patients = os.listdir(result_path)
 iou_avg = 0

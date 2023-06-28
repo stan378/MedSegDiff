@@ -1,6 +1,6 @@
 import os
 
-path = "D:/Segmentacja/Experiments/Grayscale/results330000/"
+path = "D:/Segmentacja/Experiments/Grayscale/split1/"
 files = os.listdir(path)
 
 for file in files:
