@@ -55,7 +55,20 @@ def main():
         ds = ISICDataset(args, args.data_dir, transform_test, mode = 'Test')
         args.in_ch = 4
     elif args.data_name == 'MRI':
-        tran_list = [transforms.Resize((args.image_size, args.image_size)), transforms.Grayscale(), transforms.ToTensor(), ]
+        print(f"Transformation: {args.trans_type}")
+        if args.trans_type == "gray":
+            args.in_ch = 2
+            tran_list = [transforms.Resize((args.image_size, args.image_size)), transforms.Grayscale(), transforms.ToTensor(), ]
+        elif args.trans_type == "filter":
+            args.in_ch = 4
+            tran_list = [transforms.Resize((args.image_size, args.image_size)), transforms.Lambda(lambda x: ndi.gaussian_filter(x, sigma=1)),
+                         transforms.ToTensor(), ]
+        elif args.trans_type == "orginal":
+            args.in_ch = 4
+            tran_list = [transforms.Resize((args.image_size, args.image_size)), transforms.ToTensor(), ]
+        else:
+            print("No transformation selected")
+            exit()
         transform_train = transforms.Compose(tran_list)
 
         ds = MRIDataset(args, args.data_dir, transform_train)
