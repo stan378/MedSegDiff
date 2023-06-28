@@ -30,6 +30,8 @@ from guided_diffusion.script_util import (
 )
 import torchvision.transforms as transforms
 from torchsummary import summary
+import scipy.ndimage as ndi
+
 seed=10
 th.manual_seed(seed)
 th.cuda.manual_seed_all(seed)
